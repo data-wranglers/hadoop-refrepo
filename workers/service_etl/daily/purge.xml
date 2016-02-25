@@ -1,0 +1,24 @@
+<workflow-app name="${SERVICE_ORIGIN}_purge_access_logs-W" xmlns="uri:oozie:workflow:0.4">
+
+  <parameters>
+    <property>
+      <name>load_path</name>
+      <value>${ACCESS_LOG_CACHE}/y=${YEAR}/m=${MONTH}/d=${DAY}</value>
+    </property>
+  </parameters>
+
+  <start to="cleanup"/>
+
+  <action name="cleanup">
+    <fs>
+      <delete path="${load_path}"/>
+    </fs>
+    <ok to="end"/>
+    <error to="kill"/>
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

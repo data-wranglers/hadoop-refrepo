@@ -1,0 +1,52 @@
+<workflow-app name="${SERVICE_ORIGIN}_hourly_service_etl-W" xmlns="uri:oozie:workflow:0.4">
+
+  <parameters>
+    <property>
+      <name>load_path</name>
+      <value>${ACCESS_LOG_CACHE}/y=${YEAR}/m=${MONTH}/d=${DAY}/h=${HOUR}</value>
+    </property>
+  </parameters>
+
+  <start to="extract"/>
+
+  <action name="extract">
+    <distcp xmlns="uri:oozie:distcp-action:0.1">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <prepare>
+        <delete path="${load_path}"/>
+        <mkdir path="${load_path}"/>
+      </prepare>
+      <arg>${ACCESS_LOG_SOURCE}/${ACCESS_LOG_MATCHING}${YEAR}${MONTH}${DAY}${HOUR}${ACCESS_LOGS_ENDING}</arg>
+      <arg>${load_path}</arg>
+    </distcp>
+    <ok to="transform"/>
+    <error to="kill"/>
+  </action>
+
+  <action name="transform">
+    <hive xmlns="uri:oozie:hive-action:0.2">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <job-xml>${config}/hive/hive-site.xml</job-xml>
+      <configuration>
+        <property>
+          <name>SERVICE_ORIGIN</name>
+          <value>${SERVICE_ORIGIN}</value>
+        </property>
+        <property>
+          <name>PARTITION</name>
+          <value>y='${YEAR}', m='${MONTH}', d='${DAY}', h='${HOUR}'</value>
+        </property>
+      </configuration>
+      <script>${CWD}/transform.hql</script>
+    </hive>
+    <ok to="end"/>
+    <error to="kill"/>
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

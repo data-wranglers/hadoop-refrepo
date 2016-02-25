@@ -1,0 +1,27 @@
+<workflow-app name="hivebox_query-W" xmlns="uri:oozie:workflow:0.5">
+
+  <parameters>
+    <property>
+      <name>run_query</name>
+      <value>test.hql</value>
+    </property>
+  </parameters>
+
+  <start to="run_hive_query"/>
+
+  <action name="run_hive_query">
+    <hive xmlns="uri:oozie:hive-action:0.2">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <job-xml>${pipeline}/config/hive/hive-site.xml</job-xml>
+      <script>${CWD}/${run_query}</script>
+    </hive>
+    <ok to="end"/>
+    <error to="kill"/>
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

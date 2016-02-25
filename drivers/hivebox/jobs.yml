@@ -1,0 +1,8 @@
+
+joe_user_query:
+  deploy:
+  properties: |
+    run_query=joe_user/show_tables.hql
+  postfix: |
+    PWD=${drivers}/hivebox
+    oozie.wf.application.path=${PWD}/query.xml

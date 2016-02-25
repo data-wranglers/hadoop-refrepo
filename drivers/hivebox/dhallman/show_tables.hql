@@ -1,0 +1,2 @@
+use temp;
+show tables;

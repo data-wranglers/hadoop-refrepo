@@ -1,0 +1,42 @@
+<workflow-app name="${SERVICE_ORIGIN}_service_log-W" xmlns="uri:oozie:workflow:0.4">
+
+  <start to="update_service_log"/>
+
+  <action name="update_service_log">
+    <hive xmlns="uri:oozie:hive-action:0.2">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <job-xml>${config}/hive/hive-site.xml</job-xml>
+      <configuration>
+        <property>
+          <name>SERVICE_ORIGIN</name>
+          <value>${SERVICE_ORIGIN}</value>
+        </property>
+        <property>
+          <name>PARTITION_SPEC</name>
+          <value>${PARTITION_SPEC}</value>
+        </property>
+        <property>
+          <name>PARTITION_COLUMNS</name>
+          <value>${PARTITION_COLUMNS}</value>
+        </property>
+        <property>
+          <name>FROM_DATESTAMP</name>
+          <value>${FROM_DATESTAMP}</value>
+        </property>
+        <property>
+          <name>TO_DATESTAMP</name>
+          <value>${TO_DATESTAMP}</value>
+        </property>
+      </configuration>
+      <script>${CWD}/update_service_log.hql</script>
+    </hive>
+    <ok to="end"/>
+    <error to="kill"/>
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

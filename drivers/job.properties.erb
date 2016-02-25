@@ -1,0 +1,20 @@
+# Application paths
+#------------------
+root=${nameNode}/test_repo
+workers=${root}/workers
+drivers=${root}/drivers
+utils=${root}/utils
+products=${root}/products
+config=${root}/config
+
+# Embed current driver here
+<%= job[:properties] %>
+
+# Properties that depend on job and run properties embedded above
+<% if job.has_key?(:postfix) %>
+  <%= job[:postfix] %>
+<% else %>
+  CWD=${drivers}/scenarios/${scenario}
+  oozie.coord.application.path=${CWD}/coordinator.xml
+  completion_flags=${drivers}/${driver}/${scenario}
+<% end %>

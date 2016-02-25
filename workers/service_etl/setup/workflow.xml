@@ -1,0 +1,32 @@
+<!-- 
+  service_etl
+     - Extracts service logs from source (i.e.)
+     - Transforms those service logs into key/value pairs hash
+     - Loads those key/value pairs using hive external table
+-->
+<workflow-app name="${SERVICE_ORIGIN}_service_etl-W" xmlns="uri:oozie:workflow:0.4">
+
+  <start to="setup"/>
+
+  <action name="setup">
+    <hive xmlns="uri:oozie:hive-action:0.2">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <job-xml>${config}/hive/hive-site.xml</job-xml>
+      <configuration>
+        <property>
+          <name>ACCESS_LOG_CACHE</name>
+          <value>${ACCESS_LOG_CACHE}</value>
+        </property>
+      </configuration>
+      <script>${CWD}/setup.hql</script>
+    </hive>
+    <ok to="end"/>
+    <error to="kill"/>
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

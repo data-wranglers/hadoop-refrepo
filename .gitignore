@@ -1,0 +1,11 @@
+**/.DS_Store
+**/.bak
+**/.tmp
+vendor
+.bundle
+.last_sync
+*.sync
+coverage
+**/.vagrant
+**/target
+/.idea/

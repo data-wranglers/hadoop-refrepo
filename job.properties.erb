@@ -1,0 +1,14 @@
+# Environment
+#-----------
+nameNode=<%= env[:nameNode] %>
+jobTracker=<%= env[:jobTracker] %>
+oozie_url=<%= env[:oozie_url] %>
+shared_jars_dir=/shared/jars/
+queueName=default
+
+# Oozie system
+#---------------------------------
+oozieLibPath=${nameNode}/user/oozie/share/lib
+oozie.libpath=${oozieLibPath}
+oozie.use.system.libpath=true
+oozie.wf.rerun.failnodes=true

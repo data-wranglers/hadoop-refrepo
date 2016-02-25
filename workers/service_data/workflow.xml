@@ -1,0 +1,69 @@
+<workflow-app name="${SERVICE_ORIGIN}_service_data_product-W" xmlns="uri:oozie:workflow:0.4">
+
+ <start to="update_service_etl"/>
+
+  <action name="update_service_etl">
+    <sub-workflow>
+      <app-path>${workers}/service_etl/${fill_type}</app-path>
+      <propagate-configuration/>
+      <configuration>
+        <property>
+          <name>CWD</name>
+          <value>${workers}/service_etl/${fill_type}</value>
+        </property>
+      </configuration>
+    </sub-workflow>
+    <ok to="update_service_log"/>
+    <error to="kill" />
+  </action>
+
+  <action name="update_service_log">
+    <sub-workflow>
+      <app-path>${workers}/service_log</app-path>
+      <propagate-configuration/>
+      <configuration>
+        <property>
+          <name>CWD</name>
+          <value>${workers}/service_log</value>
+        </property>
+      </configuration>
+    </sub-workflow>
+    <ok to="update_service_model"/>
+    <error to="kill" />
+  </action>
+
+  <action name="update_service_model">
+    <sub-workflow>
+      <app-path>${workers}/service_model</app-path>
+      <propagate-configuration/>
+      <configuration>
+        <property>
+          <name>CWD</name>
+          <value>${workers}/service_model</value>
+        </property>
+      </configuration>
+    </sub-workflow>
+    <ok to="purge_service_logs"/>
+    <error to="kill" />
+  </action>
+
+  <action name="purge_service_logs">
+    <sub-workflow>
+      <app-path>${workers}/service_logs/${fill_type}/purge.xml</app-path>
+      <propagate-configuration/>
+      <configuration>
+        <property>
+          <name>CWD</name>
+          <value>${workers}/service_logs/${fill_type}</value>
+        </property>
+      </configuration>
+    </sub-workflow>
+    <ok to="end"/>
+    <error to="kill" />
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

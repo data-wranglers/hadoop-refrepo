@@ -1,0 +1,18 @@
+
+noop_worker:
+  deploy: workers/noop
+  properties: |
+    scenario=hourly/incremental
+    driver=testbench/test_noop_worker
+    sla_events=start_miss
+    startTime=2015-10-30T13:26Z
+    endTime=2015-10-30T13:45Z
+
+service_etl:
+  deploy: workers/service_etl
+  properties: |
+    scenario=hourly/incremental
+    driver=testbench/test_service_el
+    sla_events=duration_miss
+    startTime=2015-10-30T13:26Z
+    endTime=2015-10-30T13:45Z

@@ -1,0 +1,27 @@
+use ${hiveconf:SERVICE_ORIGIN};
+
+ALTER TABLE service_etl ADD IF NOT EXISTS 
+   PARTITION(${hiveconf:PARTITION}, h='00')
+   PARTITION(${hiveconf:PARTITION}, h='01')
+   PARTITION(${hiveconf:PARTITION}, h='02')
+   PARTITION(${hiveconf:PARTITION}, h='03')
+   PARTITION(${hiveconf:PARTITION}, h='04')
+   PARTITION(${hiveconf:PARTITION}, h='05')
+   PARTITION(${hiveconf:PARTITION}, h='06')
+   PARTITION(${hiveconf:PARTITION}, h='07')
+   PARTITION(${hiveconf:PARTITION}, h='08')
+   PARTITION(${hiveconf:PARTITION}, h='09')
+   PARTITION(${hiveconf:PARTITION}, h='10')
+   PARTITION(${hiveconf:PARTITION}, h='11')
+   PARTITION(${hiveconf:PARTITION}, h='12')
+   PARTITION(${hiveconf:PARTITION}, h='13')
+   PARTITION(${hiveconf:PARTITION}, h='14')
+   PARTITION(${hiveconf:PARTITION}, h='15')
+   PARTITION(${hiveconf:PARTITION}, h='16')
+   PARTITION(${hiveconf:PARTITION}, h='17')
+   PARTITION(${hiveconf:PARTITION}, h='18')
+   PARTITION(${hiveconf:PARTITION}, h='19')
+   PARTITION(${hiveconf:PARTITION}, h='20')
+   PARTITION(${hiveconf:PARTITION}, h='21')
+   PARTITION(${hiveconf:PARTITION}, h='22')
+   PARTITION(${hiveconf:PARTITION}, h='23');

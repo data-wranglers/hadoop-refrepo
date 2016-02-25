@@ -1,0 +1,13 @@
+<!--
+  noop workflow
+  workflow that does nothing, can be useful for testing driver workflows
+-->
+<workflow-app name="noop-W" xmlns="uri:oozie:workflow:0.5" xmlns:sla="uri:oozie:sla:0.2">
+
+  <start to="end"/>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

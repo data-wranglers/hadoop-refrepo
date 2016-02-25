@@ -1,0 +1,99 @@
+<workflow-app name="${driver}_daily_backfill-W"
+  xmlns="uri:oozie:workflow:0.5"
+  xmlns:sla="uri:oozie:sla:0.2">
+   
+  <parameters>
+    <property>
+      <name>PARTITION_SPEC</name>
+      <value>y, m, d</value>
+    </property>
+    <property>
+      <name>PARTITION_COLUMNS</name>
+      <value>, y, m, d</value>
+    </property>
+    <property>
+      <name>FROM_DATESTAMP</name>
+      <value>${YEAR}${MONTH}</value>
+    </property>
+    <property>
+      <name>TO_DATESTAMP</name>
+      <value>${YEAR}${MONTH}</value>
+    </property>
+    <property>
+      <name>fill_type</name>
+      <value>backfill</value>
+    </property>
+    <property>
+      <name>fill_frequency</name>
+      <value>daily</value>
+    </property>
+    <property>
+      <name>success_flag</name>
+      <value>${outcome_path}/_SUCCESS</value>
+    </property>
+    <property>
+      <name>sla_events</name>
+      <value>duration_miss</value>
+    </property>
+    <property>
+      <name>sleep_time_1</name>
+      <value>150</value>
+    </property>
+  </parameters>
+
+  <start to="clean_flags"/>
+
+  <action name="clean_flags">
+    <!-- Clean any former success flags so that dependent drivers (i.e. coordinators
+         polling for a _SUCCESS flag) don't run until this workflow succeeds anew -->
+    <fs>
+      <delete path="${outcome_path}" />
+    </fs>
+    <ok to="run_driver"/>
+    <error to="kill"/>
+  </action>
+
+  <action name="run_driver">
+    <sub-workflow>
+      <app-path>${drivers}/${driver}.xml</app-path>
+      <propagate-configuration/>
+    </sub-workflow>
+    <ok to="flag_success"/>
+    <error to="sleep_and_retry" />
+  </action>
+
+  <action name="sleep_and_retry">
+    <shell xmlns="uri:oozie:shell-action:0.1">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <job-xml>${config}/hive/hive-site.xml</job-xml>
+      <exec>${utils}/sleep.sh</exec>
+      <env-var>SLEEP_TIME=${sleep_time_1}</env-var>
+      <file>${utils}/sleep.sh#sleep.sh</file>
+    </shell>
+    <ok to="retry_driver"/>
+    <error to="kill"/>
+  </action>
+
+  <action name="retry_driver">
+    <sub-workflow>
+      <app-path>${drivers}/${driver}.xml</app-path>
+      <propagate-configuration/>
+    </sub-workflow>
+    <ok to="flag_success"/>
+    <error to="kill" />
+  </action>
+
+  <action name="flag_success">
+    <fs>
+      <touchz path="${success_flag}" />
+    </fs>
+    <ok to="end"/>
+    <error to="kill"/>
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

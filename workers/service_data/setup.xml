@@ -1,0 +1,54 @@
+<workflow-app name="${SERVICE_ORIGIN}_setup_service_data_product-W" xmlns="uri:oozie:workflow:0.4">
+
+ <start to="setup"/>
+
+  <action name="setup_service_etl">
+    <sub-workflow>
+      <app-path>${workers}/service_etl/setup</app-path>
+      <propagate-configuration/>
+      <configuration>
+        <property>
+          <name>CWD</name>
+          <value>${workers}/service_etl/setup</value>
+        </property>
+      </configuration>
+    </sub-workflow>
+    <ok to="setup_service_log"/>
+    <error to="kill" />
+  </action>
+
+  <action name="setup_service_log">
+    <sub-workflow>
+      <app-path>${CWD}/service_log/setup</app-path>
+      <propagate-configuration/>
+      <configuration>
+        <property>
+          <name>CWD</name>
+          <value>${workers}/service_log/setup</value>
+        </property>
+      </configuration>
+    </sub-workflow>
+    <ok to="setup_service_model"/>
+    <error to="kill" />
+  </action>
+
+  <action name="setup_service_model">
+    <sub-workflow>
+      <app-path>${CWD}/service_model/setup</app-path>
+      <propagate-configuration/>
+      <configuration>
+        <property>
+          <name>CWD</name>
+          <value>${workers}/service_model/setup</value>
+        </property>
+      </configuration>
+    </sub-workflow>
+    <ok to="end"/>
+    <error to="kill" />
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

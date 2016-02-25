@@ -1,0 +1,73 @@
+<coordinator-app name="${driver}_hourly_incremental-C"
+  frequency="${coord:hours(1)}" start="${startTime}" end="${endTime}" timezone="${timeZone}"
+  xmlns="uri:oozie:coordinator:0.4">
+  <controls>
+    <timeout>${timeout}</timeout> 
+    <concurrency>${concurrency}</concurrency>
+    <throttle>${throttle}</throttle>
+  </controls>
+
+  <datasets>
+    <dataset name="input_1" frequency="${coord:hours(1)}"
+      initial-instance="${startTime}" timezone="${timeZone}">
+      <uri-template>${input_1}/y=${YEAR}/m=${MONTH}/d=${DAY}/h=${HOUR}</uri-template>
+      <done-flag>_SUCCESS</done-flag>
+    </dataset>
+    <dataset name="input_2" frequency="${coord:hours(1)}"
+      initial-instance="${startTime}" timezone="${timeZone}">
+      <uri-template>${input_2}/y=${YEAR}/m=${MONTH}/d=${DAY}/h=${HOUR}</uri-template>
+      <done-flag>_SUCCESS</done-flag>
+    </dataset>
+    <dataset name="driver_hourly_incremental" frequency="${coord:hours(1)}"
+      initial-instance="${startTime}" timezone="${timeZone}">
+      <uri-template>${completion_flags}/y=${YEAR}/m=${MONTH}/d=${DAY}/h=${HOUR}</uri-template>
+      <done-flag>_SUCCESS</done-flag>
+    </dataset>
+  </datasets>
+
+  <input-events>
+    <data-in name="input_1_ready" dataset="input_1">
+      <instance>${coord:current(0)}</instance>
+    </data-in>
+    <data-in name="input_2_ready" dataset="input_2">
+      <instance>${coord:current(0)}</instance>
+    </data-in>
+  </input-events>
+  <output-events>
+    <data-out name="outcome_ready" dataset="driver_hourly_incremental">
+      <instance>${coord:current(0)}</instance>
+    </data-out>
+  </output-events>
+
+  <action>
+    <workflow>
+      <app-path>${CWD}/context.xml</app-path>
+      <configuration>
+        <property>
+          <name>nominal_time</name>
+          <value>${coord:nominalTime()}</value>
+        </property>
+        <property>
+          <name>YEAR</name>
+          <value>${coord:formatTime(coord:nominalTime(), 'yyyy')}</value>
+        </property>
+        <property>
+          <name>MONTH</name>
+          <value>${coord:formatTime(coord:nominalTime(), 'MM')}</value>
+        </property>
+        <property>
+          <name>DAY</name>
+          <value>${coord:formatTime(coord:nominalTime(), 'dd')}</value>
+        </property>
+        <property>
+          <name>HOUR</name>
+          <value>${coord:formatTime(coord:nominalTime(), 'HH')}</value>
+        </property>
+        <property>
+          <name>outcome_path</name>
+          <value>${coord:dataOut('outcome_ready')}</value>
+        </property>
+      </configuration>
+   </workflow>
+  </action>
+</coordinator-app>

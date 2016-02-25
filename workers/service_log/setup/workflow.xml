@@ -1,0 +1,26 @@
+<workflow-app name="setup_${SERVICE_ORIGIN}-W" xmlns="uri:oozie:workflow:0.4">
+
+  <start to="do_setup"/>
+
+  <action name="do_setup">
+    <hive xmlns="uri:oozie:hive-action:0.2">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <job-xml>${config}/hive/hive-site.xml</job-xml>
+      <configuration>
+        <property>
+          <name>SERVICE_ORIGIN</name>
+          <value>${SERVICE_ORIGIN}</value>
+        </property>
+      </configuration>
+      <script>${CWD}/setup.hql</script>
+    </hive>
+    <ok to="end"/>
+    <error to="kill"/>
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

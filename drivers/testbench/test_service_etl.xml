@@ -1,0 +1,44 @@
+<workflow-app name="${driver}_${fill_type}_driver-W" xmlns="uri:oozie:workflow:0.5" xmlns:sla="uri:oozie:sla:0.2">
+
+  <start to="invoke_service_etl"/>
+
+  <action name="invoke_service_etl">
+    <sub-workflow>
+      <app-path>${utils}/retry_workflow.xml</app-path>
+      <propagate-configuration/>
+      <configuration>
+        <property>
+          <name>CWD</name>
+          <value>${workers}/service_etl/${fill_frequency}</value>
+        </property>
+        <property>
+          <name>ACCESS_LOGS_SOURCE</name>
+          <value>example</value>
+        </property>
+        <property>
+          <name>ACCESS_LOGS_ORIGIN</name>
+          <value>${example_origin}</value>
+        </property>
+        <property>
+          <name>ACCESS_LOGS_CACHE</name>
+          <value>${example_cache}</value>
+        </property>
+        <property>
+          <name>ACCESS_LOGS_MATCHING</name>
+          <value>${YEAR}/${MONTH}/*access_log.</value>
+        </property>
+        <property>
+          <name>ACCESS_LOGS_ENDING</name>
+          <value>*</value>
+        </property>
+      </configuration>
+    </sub-workflow>
+    <ok to="end"/>
+    <error to="kill" />
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

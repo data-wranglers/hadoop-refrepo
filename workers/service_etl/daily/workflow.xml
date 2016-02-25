@@ -1,0 +1,106 @@
+<workflow-app name="${SERVICE_ORIGIN}_daily_service_etl-W" xmlns="uri:oozie:workflow:0.4">
+
+  <parameters>
+    <property>
+      <name>load_path</name>
+      <value>${ACCESS_LOG_CACHE}/y=${YEAR}/m=${MONTH}/d=${DAY}</value>
+    </property>
+  </parameters>
+
+  <start to="extract"/>
+
+  <action name="extract">
+    <distcp xmlns="uri:oozie:distcp-action:0.1">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <prepare>
+        <delete path="${load_path}"/>
+        <mkdir path="${load_path}/h=00"/>
+        <mkdir path="${load_path}/h=01"/>
+        <mkdir path="${load_path}/h=02"/>
+        <mkdir path="${load_path}/h=03"/>
+        <mkdir path="${load_path}/h=04"/>
+        <mkdir path="${load_path}/h=05"/>
+        <mkdir path="${load_path}/h=06"/>
+        <mkdir path="${load_path}/h=07"/>
+        <mkdir path="${load_path}/h=08"/>
+        <mkdir path="${load_path}/h=09"/>
+        <mkdir path="${load_path}/h=10"/>
+        <mkdir path="${load_path}/h=11"/>
+        <mkdir path="${load_path}/h=12"/>
+        <mkdir path="${load_path}/h=13"/>
+        <mkdir path="${load_path}/h=14"/>
+        <mkdir path="${load_path}/h=15"/>
+        <mkdir path="${load_path}/h=16"/>
+        <mkdir path="${load_path}/h=17"/>
+        <mkdir path="${load_path}/h=18"/>
+        <mkdir path="${load_path}/h=19"/>
+        <mkdir path="${load_path}/h=20"/>
+        <mkdir path="${load_path}/h=21"/>
+        <mkdir path="${load_path}/h=22"/>
+        <mkdir path="${load_path}/h=23"/>
+      </prepare>
+      <arg>${ACCESS_LOGS_SOURCE}/${ACCESS_LOGS_MATCHING}${YEAR}${MONTH}${DAY}${ACCESS_LOGS_ENDING}</arg>
+      <arg>${load_path}</arg>
+    </distcp>
+    <ok to="position"/>
+    <error to="kill"/>
+  </action>
+
+  <action name="position">
+    <fs>
+      <move source="${load_path}/*${MONTH}${DAY}00*" target="${load_path}/h=00/"/>
+      <move source="${load_path}/*${MONTH}${DAY}01*" target="${load_path}/h=01/"/>
+      <move source="${load_path}/*${MONTH}${DAY}02*" target="${load_path}/h=02/"/>
+      <move source="${load_path}/*${MONTH}${DAY}03*" target="${load_path}/h=03/"/>
+      <move source="${load_path}/*${MONTH}${DAY}04*" target="${load_path}/h=04/"/>
+      <move source="${load_path}/*${MONTH}${DAY}05*" target="${load_path}/h=05/"/>
+      <move source="${load_path}/*${MONTH}${DAY}06*" target="${load_path}/h=06/"/>
+      <move source="${load_path}/*${MONTH}${DAY}07*" target="${load_path}/h=07/"/>
+      <move source="${load_path}/*${MONTH}${DAY}08*" target="${load_path}/h=08/"/>
+      <move source="${load_path}/*${MONTH}${DAY}09*" target="${load_path}/h=09/"/>
+      <move source="${load_path}/*${MONTH}${DAY}10*" target="${load_path}/h=10/"/>
+      <move source="${load_path}/*${MONTH}${DAY}11*" target="${load_path}/h=11/"/>
+      <move source="${load_path}/*${MONTH}${DAY}12*" target="${load_path}/h=12/"/>
+      <move source="${load_path}/*${MONTH}${DAY}13*" target="${load_path}/h=13/"/>
+      <move source="${load_path}/*${MONTH}${DAY}14*" target="${load_path}/h=14/"/>
+      <move source="${load_path}/*${MONTH}${DAY}15*" target="${load_path}/h=15/"/>
+      <move source="${load_path}/*${MONTH}${DAY}16*" target="${load_path}/h=16/"/>
+      <move source="${load_path}/*${MONTH}${DAY}17*" target="${load_path}/h=17/"/>
+      <move source="${load_path}/*${MONTH}${DAY}18*" target="${load_path}/h=18/"/>
+      <move source="${load_path}/*${MONTH}${DAY}19*" target="${load_path}/h=19/"/>
+      <move source="${load_path}/*${MONTH}${DAY}20*" target="${load_path}/h=20/"/>
+      <move source="${load_path}/*${MONTH}${DAY}21*" target="${load_path}/h=21/"/>
+      <move source="${load_path}/*${MONTH}${DAY}22*" target="${load_path}/h=22/"/>
+      <move source="${load_path}/*${MONTH}${DAY}23*" target="${load_path}/h=23/"/>
+    </fs>
+    <ok to="transform"/>
+    <error to="kill"/>
+  </action>
+
+  <action name="transform">
+    <hive xmlns="uri:oozie:hive-action:0.2">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <job-xml>${config}/hive/hive-site.xml</job-xml>
+      <configuration>
+        <property>
+          <name>SERVICE_ORIGIN</name>
+          <value>${SERVICE_ORIGIN}</value>
+        </property>
+        <property>
+          <name>PARTITION</name>
+          <value>y='${YEAR}', m='${MONTH}', d='${DAY}'</value>
+        </property>
+      </configuration>
+      <script>${CWD}/transform.hql</script>
+    </hive>
+    <ok to="end"/>
+    <error to="kill"/>
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>

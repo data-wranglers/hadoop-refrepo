@@ -1,0 +1,99 @@
+<workflow-app name="retry_workflow-W" xmlns="uri:oozie:workflow:0.5">
+
+  <parameters>
+    <property>
+      <name>wf</name>
+      <value>workflow.xml</value>
+    </property>
+    <property>
+      <name>sleep_time_1</name>
+      <value>150</value>
+    </property>
+    <property>
+      <name>sleep_time_2</name>
+      <value>300</value>
+    </property>
+    <property>
+      <name>utils</name>
+      <value>${pipeline}/utils</value>
+    </property>
+  </parameters>
+
+  <start to="attempt_1"/>
+
+  <action name="attempt_1">
+    <sub-workflow>
+      <app-path>${CWD}/${wf}</app-path>
+      <propagate-configuration/>
+    </sub-workflow>
+    <ok to="end"/>
+    <error to="check_sleep_1" />
+  </action>
+
+  <decision name="check_sleep_1">
+    <switch>
+      <case to="kill">
+        ${wf:conf('sleep_time_1') eq -1}
+      </case>
+      <default to="sleep_1"/>
+    </switch>
+  </decision>
+
+  <action name="sleep_1">
+    <shell xmlns="uri:oozie:shell-action:0.1">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <job-xml>${pipeline}/config/hive/hive-site.xml</job-xml>
+      <exec>sleep.sh</exec>
+      <env-var>SLEEP_TIME=${sleep_time_1}</env-var>
+      <file>${utils}/sleep.sh#sleep.sh</file>
+    </shell>
+    <ok to="attempt_2"/>
+    <error to="sleep_2"/>
+  </action>
+
+  <action name="attempt_2">
+    <sub-workflow>
+      <app-path>${CWD}/${wf}</app-path>
+      <propagate-configuration/>
+    </sub-workflow>
+    <ok to="end"/>
+    <error to="check_sleep_2"/>
+  </action>
+
+  <decision name="check_sleep_2">
+    <switch>
+      <case to="kill">
+        ${wf:conf('sleep_time_2') eq -1}
+      </case>
+      <default to="sleep_2"/>
+    </switch>
+  </decision>
+
+  <action name="sleep_2">
+    <shell xmlns="uri:oozie:shell-action:0.1">
+      <job-tracker>${jobTracker}</job-tracker>
+      <name-node>${nameNode}</name-node>
+      <job-xml>${pipeline}/config/hive/hive-site.xml</job-xml>
+      <exec>sleep.sh</exec>
+      <env-var>SLEEP_TIME=${sleep_time_2}</env-var>
+      <file>${utils}/sleep.sh#sleep.sh</file>
+    </shell>
+    <ok to="attempt_3"/>
+    <error to="kill"/>
+  </action>
+
+  <action name="attempt_3">
+    <sub-workflow>
+      <app-path>${CWD}/${wf}</app-path>
+      <propagate-configuration/>
+    </sub-workflow>
+    <ok to="end"/>
+    <error to="kill" />
+  </action>
+
+  <kill name="kill">
+    <message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>
