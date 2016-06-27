@@ -1,0 +1,14 @@
+secrets:
+  - yml:
+     local:
+       folder: config
+       config_file_name: secrets
+  - yml:
+     s3:
+       bucket: [targ_bucket]
+       folder: [secret_folder_path_on_bucket]
+       config_file_name: secrets
+  - yml:
+     local:
+       folder: config/.private
+       config_file_name: secrets
