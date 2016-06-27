@@ -2,6 +2,7 @@
 **/.bak
 **/.tmp
 vendor
+config/.private/
 .bundle
 .last_sync
 *.sync
